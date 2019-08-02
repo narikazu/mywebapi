@@ -27,6 +27,45 @@ impl Handlers {
     }
 }
 
+pub struct FeedHandler {
+  database: Arc<Mutex<Database>>,
+}
+
+impl FeedHandler {
+  fn new(database: Arc<Mutex<Database>>) -> FeedHandler {
+    FeedHandler { database: database }
+  }
+}
+
+impl Handler for FeedHandler {
+  fn handle(&self, _: &mut Request) -> IronResult<Response> {
+    let payload = try_handler!(json::encode(lock!(self.database).posts()));
+    Ok(Response::with((status::Ok, payload)))
+  }
+}
+
+pub #[derive(Debug)]
+struct MakePostHander {
+  database: Arc<Mutex<Database>>,
+}
+
+impl MakePostHander {
+  fn new(database: Arc<Mutex<Database>>) -> MakePostHander {
+    MakePostHander { database: database }
+  }
+}
+
+impl Handler for MakePostHander {
+  fn handle(&self, req: &mut Request) -> IronResult<Response> {
+    let mut payload = String::new();
+    try_handler!(req.body.read_to_string(&mut payload));
+
+    let post = try_handler!(json::decode(&payload), status::BadRequest);
+    lock!(self.database).add_post(post);
+    Ok(Response::with((status::Created, payload)))
+  }
+}
+
 macro_rules! try_handler {
     ($e:expr) => {
         match $e {
