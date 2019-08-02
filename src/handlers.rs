@@ -9,8 +9,7 @@ use router::Router;
 use model::Post;
 use std::error::Error;
 
-pub #[derive(Debug)]
-struct Handlers {
+pub struct Handlers {
     pub feed: FeedHandler,
     pub make_post: MakePostHandler,
     pub post: PostHandler,

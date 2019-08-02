@@ -14,7 +14,7 @@ pub struct Post {
 impl Post {
     pub fn new(summary: &str,
                 contents: &str,
-                author_handle: &Author,
+                author: &Author,
                 date_time: DateTime<UTC>,
                 uuid: Uuid)
                 -> Post {
