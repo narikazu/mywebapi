@@ -9,6 +9,24 @@ use router::Router;
 use model::Post;
 use std::error::Error;
 
+pub #[derive(Debug)]
+struct Handlers {
+    pub feed: FeedHandler,
+    pub make_post: MakePostHander,
+    pub post: PostHnader,
+}
+
+impl Handlers {
+    pub fn new(database: Database) -> Handlers {
+        let database = Arc::new(Mutex::new(database));
+        Handlers {
+            feed: FeedHandler::new(database.clone()),
+            make_post: MakePostHander::new(database.clone()),
+            post: PostHnader::new(database.clone()),
+        }
+    }
+}
+
 macro_rules! try_handler {
     ($e:expr) => {
         match $e {
