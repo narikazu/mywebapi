@@ -84,11 +84,13 @@ impl Handler for PostHandler {
   fn handle(&self, req: &mut Request) -> IronResult<Response> {
     let ref post_id = get_http_param!(req, "id");
 
+    let id = try_handler!(Uuid::parse_str(post_id), status::BadRequest);
+
     if let Some(post) = self.find_post(&id) {
       let payload = try_handler!(json::encode(&post), status::InternalServerError);
       Ok(Response::with((status::Ok, payload)))
     } else {
-      Ok(Response::with((status::NotFound)))
+      Ok(Response::with(status::NotFound))
     }
   }
 }
