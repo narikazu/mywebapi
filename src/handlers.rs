@@ -9,6 +9,39 @@ use router::Router;
 use model::Post;
 use std::error::Error;
 
+macro_rules! try_handler {
+    ($e:expr) => {
+        match $e {
+            Ok(x) => x,
+            Err(e) => return Ok(Response::with((status::InternalServerError, e.description())))
+        }
+    };
+    ($e:expr, $error:expr) => {
+        match $e {
+            Ok(x) => x,
+            Err(e) => return Ok(Response::with(($error, e.description())))
+        }
+    }
+}
+
+macro_rules! lock {
+    ($e:expr) => { $e.lock().unwrap()}
+}
+
+macro_rules! get_http_param {
+    ($r:expr, $e:expr) => {
+        match $r.extensions.get::<Router>() {
+            Some(router) => {
+                match router.find($e) {
+                    Some(val) => val,
+                    None => return Ok(Response::with(status::BadRequest)),
+                }
+            }
+            None => return Ok(Response::with(status::InternalServerError)),
+        }
+    }
+}
+
 pub struct Handlers {
     pub feed: FeedHandler,
     pub make_post: MakePostHandler,
@@ -93,39 +126,6 @@ impl Handler for PostHandler {
       Ok(Response::with(status::NotFound))
     }
   }
-}
-
-macro_rules! try_handler {
-    ($e:expr) => {
-        match $e {
-            Ok(x) => x,
-            Err(e) => return Ok(Response::with((status::InternalServerError, e.description())))
-        }
-    };
-    ($e:expr, $error:expr) => {
-        match $e {
-            Ok(x) => x,
-            Err(e) => return Ok(Response::with(($error, e.description())))
-        }
-    }
-}
-
-macro_rules! lock {
-    ($e:expr) => { $e.lock().unwrap()}
-}
-
-macro_rules! get_http_param {
-    ($r:expr, $e:expr) => {
-        match $r.extensions.get::<Router>() {
-            Some(router) => {
-                match router.find($e) {
-                    Some(val) => val,
-                    None => return Ok(Response::with(status::BadRequest)),
-                }
-            }
-            None => return Ok(Response::with(status::InternalServerError)),
-        }
-    }
 }
 
 pub struct JsonAfterMiddleware;
