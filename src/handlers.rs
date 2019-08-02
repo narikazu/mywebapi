@@ -12,8 +12,8 @@ use std::error::Error;
 pub #[derive(Debug)]
 struct Handlers {
     pub feed: FeedHandler,
-    pub make_post: MakePostHander,
-    pub post: PostHnader,
+    pub make_post: MakePostHandler,
+    pub post: PostHandler,
 }
 
 impl Handlers {
@@ -21,8 +21,8 @@ impl Handlers {
         let database = Arc::new(Mutex::new(database));
         Handlers {
             feed: FeedHandler::new(database.clone()),
-            make_post: MakePostHander::new(database.clone()),
-            post: PostHnader::new(database.clone()),
+            make_post: MakePostHandler::new(database.clone()),
+            post: PostHandler::new(database.clone()),
         }
     }
 }
@@ -44,17 +44,17 @@ impl Handler for FeedHandler {
   }
 }
 
-pub struct MakePostHander {
+pub struct MakePostHandler {
   database: Arc<Mutex<Database>>,
 }
 
-impl MakePostHander {
-  fn new(database: Arc<Mutex<Database>>) -> MakePostHander {
-    MakePostHander { database: database }
+impl MakePostHandler {
+  fn new(database: Arc<Mutex<Database>>) -> MakePostHandler {
+    MakePostHandler { database: database }
   }
 }
 
-impl Handler for MakePostHander {
+impl Handler for MakePostHandler {
   fn handle(&self, req: &mut Request) -> IronResult<Response> {
     let mut payload = String::new();
     try_handler!(req.body.read_to_string(&mut payload));
@@ -65,13 +65,13 @@ impl Handler for MakePostHander {
   }
 }
 
-pub struct PostHander {
+pub struct PostHandler {
   database: Arc<Mutex<Database>>,
 }
 
-impl PostHander {
-  fn new(database: Arc<Mutex<Database>>) -> PostHander {
-    PostHander { database: database }
+impl PostHandler {
+  fn new(database: Arc<Mutex<Database>>) -> PostHandler {
+    PostHandler { database: database }
   }
 
   fn find_post(&self, id: &Uuid) -> Option<Post> {
@@ -81,7 +81,7 @@ impl PostHander {
   }
 }
 
-impl Handler for PostHander {
+impl Handler for PostHandler {
   fn handle(&self, req: &mut Request) -> IronResult<Response> {
     let ref post_id = get_http_param!(req, "id");
 
