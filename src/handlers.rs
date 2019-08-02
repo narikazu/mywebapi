@@ -3,10 +3,10 @@ use std::io::Read;
 use iron::{Handler, status, IronResult, Response, Request, AfterMiddleware};
 use iron::headers::ContentType;
 use rustc_serialize::json;
-use database::Database;
+use crate::database::Database;
 use uuid::Uuid;
 use router::Router;
-use model::Post;
+use crate::model::Post;
 use std::error::Error;
 
 macro_rules! try_handler {
