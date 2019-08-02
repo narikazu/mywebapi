@@ -44,8 +44,7 @@ impl Handler for FeedHandler {
   }
 }
 
-pub #[derive(Debug)]
-struct MakePostHander {
+pub struct MakePostHander {
   database: Arc<Mutex<Database>>,
 }
 
@@ -63,6 +62,35 @@ impl Handler for MakePostHander {
     let post = try_handler!(json::decode(&payload), status::BadRequest);
     lock!(self.database).add_post(post);
     Ok(Response::with((status::Created, payload)))
+  }
+}
+
+pub struct PostHander {
+  database: Arc<Mutex<Database>>,
+}
+
+impl PostHander {
+  fn new(database: Arc<Mutex<Database>>) -> PostHander {
+    PostHander { database: database }
+  }
+
+  fn find_post(&self, id: &Uuid) -> Option<Post> {
+    let locked = lock!(self.database);
+    let mut iterator = locked.posts().iter();
+    iterator.find(|post| post.uuid() == id).map(|post| post.clone())
+  }
+}
+
+impl Handler for PostHander {
+  fn handle(&self, req: &mut Request) -> IronResult<Response> {
+    let ref post_id = get_http_param!(req, "id");
+
+    if let Some(post) = self.find_post(&id) {
+      let payload = try_handler!(json::encode(&post), status::InternalServerError);
+      Ok(Response::with((status::Ok, payload)))
+    } else {
+      Ok(Response::with((status::NotFound)))
+    }
   }
 }
 
